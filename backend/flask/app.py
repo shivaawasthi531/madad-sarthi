@@ -9,8 +9,8 @@ CPP_DIR = os.path.abspath(os.path.join(BASE_DIR, "../cpp"))
 
 BUS_ENGINE_PATH = os.path.join(CPP_DIR, "bus_engine")
 METRO_ENGINE_PATH = os.path.join(CPP_DIR, "metro_engine")
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
-FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../frontend"))
 
 STATION_CSV = os.path.join(CPP_DIR, "metro_stations.csv")
 LINE_CSV    = os.path.join(CPP_DIR, "metro_lines.csv")
@@ -76,3 +76,4 @@ def metro_route():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+

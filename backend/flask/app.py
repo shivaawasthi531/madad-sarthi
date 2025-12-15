@@ -23,6 +23,7 @@ def home():
 def static_files(path):
     return send_from_directory(FRONTEND_DIR, path)
 
+
 @app.route("/bus-route", methods=["POST"])
 def bus_route():
     data = request.json
@@ -76,4 +77,5 @@ def metro_route():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
 

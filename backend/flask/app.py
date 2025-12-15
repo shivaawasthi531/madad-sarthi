@@ -1,21 +1,19 @@
 from flask import Flask, request, jsonify, send_from_directory
-import subprocess
-import os
+import subprocess, os
 
-app = Flask(__name__, static_folder=None)
+app = Flask(__name__)
 
-# ===== BASE PATHS =====
+# ===== PATHS =====
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = BASE_DIR  # assume app.py is at project root
-CPP_DIR = os.path.join(PROJECT_ROOT, "backend", "cpp")
-DATA_DIR = os.path.join(PROJECT_ROOT, "backend", "data")
-FRONTEND_DIR = PROJECT_ROOT
+FRONTEND_DIR = BASE_DIR                # index.html root me hai
+CPP_DIR = os.path.join(BASE_DIR, "backend", "cpp")
+DATA_DIR = os.path.join(BASE_DIR, "backend", "data")
 
-# ===== C++ BINARIES =====
-BUS_ENGINE   = os.path.join(CPP_DIR, "bus_engine")
+# C++ binaries
+BUS_ENGINE = os.path.join(CPP_DIR, "bus_engine")
 METRO_ENGINE = os.path.join(CPP_DIR, "metro_engine")
 
-# ===== CSV FILES =====
+# CSV files
 BUS_STOPS      = os.path.join(DATA_DIR, "dtc_bus_stops.csv")
 BUS_INFO       = os.path.join(DATA_DIR, "dtc_buses.csv")
 METRO_STATIONS = os.path.join(DATA_DIR, "dtc_metro_stations.csv")
@@ -28,7 +26,11 @@ def home():
 
 @app.route("/<path:path>")
 def static_files(path):
-    return send_from_directory(FRONTEND_DIR, path)
+    file_path = os.path.join(FRONTEND_DIR, path)
+    if os.path.exists(file_path):
+        return send_from_directory(FRONTEND_DIR, path)
+    else:
+        return "File Not Found", 404
 
 # ===== BUS ROUTE =====
 @app.route("/bus-route", methods=["POST"])
@@ -37,7 +39,6 @@ def bus_route():
     start = data.get("start", "")
     end   = data.get("end", "")
 
-    # run bus_engine with start & end
     result = subprocess.run(
         [BUS_ENGINE, start, end],
         cwd=CPP_DIR,

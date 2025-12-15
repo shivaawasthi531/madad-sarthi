@@ -6,16 +6,20 @@ app = Flask(__name__, static_folder=None)
 
 # ===== BASE PATHS =====
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+PROJECT_ROOT = BASE_DIR  # assume app.py is at project root
 CPP_DIR = os.path.join(PROJECT_ROOT, "backend", "cpp")
+DATA_DIR = os.path.join(PROJECT_ROOT, "backend", "data")
 FRONTEND_DIR = PROJECT_ROOT
 
-# ===== C++ BINARIES (Linux compatible) =====
-BUS_ENGINE = os.path.join(CPP_DIR, "bus_engine")
+# ===== C++ BINARIES =====
+BUS_ENGINE   = os.path.join(CPP_DIR, "bus_engine")
 METRO_ENGINE = os.path.join(CPP_DIR, "metro_engine")
 
-STATION_CSV = os.path.join(CPP_DIR, "metro_stations.csv")
-LINE_CSV    = os.path.join(CPP_DIR, "metro_lines.csv")
+# ===== CSV FILES =====
+BUS_STOPS      = os.path.join(DATA_DIR, "dtc_bus_stops.csv")
+BUS_INFO       = os.path.join(DATA_DIR, "dtc_buses.csv")
+METRO_STATIONS = os.path.join(DATA_DIR, "dtc_metro_stations.csv")
+METRO_LINES    = os.path.join(DATA_DIR, "dtc_metro_lines.csv")
 
 # ===== FRONTEND =====
 @app.route("/")
@@ -31,8 +35,9 @@ def static_files(path):
 def bus_route():
     data = request.get_json(force=True)
     start = data.get("start", "")
-    end = data.get("end", "")
+    end   = data.get("end", "")
 
+    # run bus_engine with start & end
     result = subprocess.run(
         [BUS_ENGINE, start, end],
         cwd=CPP_DIR,
@@ -51,10 +56,10 @@ def bus_route():
 def metro_route():
     data = request.get_json(force=True)
     start = data.get("start", "")
-    end = data.get("end", "")
+    end   = data.get("end", "")
 
     result = subprocess.run(
-        [METRO_ENGINE, start, end, STATION_CSV, LINE_CSV],
+        [METRO_ENGINE, start, end, METRO_STATIONS, METRO_LINES],
         cwd=CPP_DIR,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

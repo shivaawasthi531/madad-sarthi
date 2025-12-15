@@ -99,7 +99,7 @@ function hideSkeletonsKeepPlaceholders(){
   });
 }
 
-// ======= BUS SEARCH LOGIC (UNCHANGED) =======
+// ======= BUS SEARCH LOGIC (ONLY URL FIXED) =======
 async function searchRoute(){
   const start = $('start').value.trim();
   const end = $('end').value.trim();
@@ -113,7 +113,7 @@ async function searchRoute(){
   showLoadingSkeletons();
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/bus-route", {
+    const response = await fetch("/bus-route", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ start, end })
@@ -133,13 +133,13 @@ ${data.raw}
 
   } catch (err) {
     $('busBody').innerHTML =
-      `<div class="placeholder">Flask server not running</div>`;
+      `<div class="placeholder">Backend error</div>`;
   }
 
   hideSkeletonsKeepPlaceholders();
 }
 
-// ======= METRO SEARCH LOGIC (Refactored, flash removed) =======
+// ======= METRO SEARCH LOGIC (ONLY URL FIXED) =======
 async function searchMetroRoute() {
   const start = $('start').value.trim();
   const end = $('end').value.trim();
@@ -149,10 +149,8 @@ async function searchMetroRoute() {
     return;
   }
 
-  // Skeleton already shown by searchAll, so don't re-render here
-
   try {
-    const response = await fetch("http://127.0.0.1:5000/metro-route", {
+    const response = await fetch("/metro-route", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ start, end })
@@ -172,16 +170,13 @@ async function searchMetroRoute() {
 
   } catch (err) {
     $('metroBody').innerHTML =
-      `<div class="placeholder">Flask server not running</div>`;
+      `<div class="placeholder">Backend error</div>`;
   }
 }
 
 // ======= MAIN SEARCH BUTTON =======
 async function searchAll() {
-  // Show skeletons once
   showLoadingSkeletons();
-
-  // Run bus and metro searches in parallel (or await if sequence needed)
   await searchRoute();
   await searchMetroRoute();
 }
@@ -191,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
   hideSkeletonsKeepPlaceholders();
   document.querySelector(".results-wrap").style.display = "none";
 
-  // Prevent form reload if search button inside a form
   const form = document.getElementById("searchForm");
   if(form){
     form.addEventListener("submit", function(e){

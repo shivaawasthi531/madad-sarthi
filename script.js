@@ -100,6 +100,7 @@ function hideSkeletonsKeepPlaceholders(){
 }
 
 // ======= BUS SEARCH LOGIC (ONLY URL FIXED) =======
+// ======= BUS SEARCH LOGIC (ONLY REQUIRED FIX) =======
 async function searchRoute(){
   const start = $('start').value.trim();
   const end = $('end').value.trim();
@@ -126,7 +127,7 @@ async function searchRoute(){
     } else {
       $('busBody').innerHTML = `
         <pre style="white-space: pre-wrap; font-size:14px; line-height:1.6">
-${data.raw}
+${data.result}
         </pre>
       `;
     }
@@ -138,6 +139,7 @@ ${data.raw}
 
   hideSkeletonsKeepPlaceholders();
 }
+
 
 // ======= METRO SEARCH LOGIC (ONLY URL FIXED) =======
 async function searchMetroRoute() {
@@ -194,3 +196,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+

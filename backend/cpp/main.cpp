@@ -47,7 +47,7 @@ string normalizeLocation(string s) {
 
 int main(int argc, char* argv[]) {
 
-    // 🔴 ONLY UPDATE: INPUT FROM COMMAND LINE
+    // 🔴 INPUT FROM COMMAND LINE (REQUIRED FOR FLASK)
     if (argc < 3) {
         cout << "No bus found for this route!\n";
         return 0;
@@ -63,14 +63,14 @@ int main(int argc, char* argv[]) {
     map<string, BusInfo> bus_info;
 
     // ---------- READ BUS STOPS ----------
-    ifstream stops_file("dtc_bus_stops.csv");
+    ifstream stops_file("./dtc_bus_stops.csv");   // ✅ FIXED PATH
     if (!stops_file.is_open()) {
         cout << "Error opening dtc_bus_stops.csv\n";
-        return 1;
+        return 0;
     }
 
     string line;
-    getline(stops_file, line);
+    getline(stops_file, line); // skip header
 
     while (getline(stops_file, line)) {
         stringstream ss(line);
@@ -93,13 +93,13 @@ int main(int argc, char* argv[]) {
     stops_file.close();
 
     // ---------- READ BUS INFO ----------
-    ifstream bus_file("dtc_buses.csv");
+    ifstream bus_file("./dtc_buses.csv");   // ✅ FIXED PATH
     if (!bus_file.is_open()) {
         cout << "Error opening dtc_buses.csv\n";
-        return 1;
+        return 0;
     }
 
-    getline(bus_file, line);
+    getline(bus_file, line); // skip header
     while (getline(bus_file, line)) {
         stringstream ss(line);
         string bus, start, end, first, last, fare;
@@ -155,9 +155,7 @@ int main(int argc, char* argv[]) {
                 cout << " -> " << stops[i].name
                      << " (Fare: Rs " << stops[i].fare << ")\n";
             }
-            
         }
-        
     }
 
     if (!found)

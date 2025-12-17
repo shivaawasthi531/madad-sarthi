@@ -19,6 +19,9 @@ function clearFields(){
   $('end').value = '';
   $('busBody').innerHTML = `<div class="placeholder">Awaiting backend data...</div>`;
   $('metroBody').innerHTML = `<div class="placeholder">Backend will inject metro data here.</div>`;
+  $('trafficBody').innerHTML = `<div class="placeholder">Traffic status will appear here</div>`;
+  $('altBody').innerHTML = `<div class="placeholder">Alternatives will appear here</div>`;
+  $('etaBody').innerHTML = `<div class="placeholder">ETA will appear here</div>`;
   $('start').focus();
 }
 
@@ -87,20 +90,45 @@ function showLoadingSkeletons(){
   });
 }
 
-function hideSkeletonsKeepPlaceholders(){
-  const map = {
-    metroBody: '<div class="placeholder">Backend will inject metro data here.</div>',
-    trafficBody: '<div class="placeholder">Traffic is - MODERATE</div>',
-    altBody: '<div class="placeholder">book taxi from app ola, uber ,rapido</div>',
-    etaBody: '<div class="placeholder">#discount via book using official DMRC , DTC WEBSITE</div>',
-  };
-  Object.keys(map).forEach(k => {
-    if($(k)) $(k).innerHTML = map[k];
-  });
+// ======= RANDOM TRAFFIC + ETA (FRONTEND ONLY) =======
+function generateTrafficETA(){
+  const trafficLevels = [
+    { level: "LOW", color: "#2ecc71", etaMin: 20, etaMax: 30 },
+    { level: "MODERATE", color: "#f1c40f", etaMin: 30, etaMax: 45 },
+    { level: "HIGH", color: "#e74c3c", etaMin: 45, etaMax: 70 }
+  ];
+
+  const selected = trafficLevels[Math.floor(Math.random() * trafficLevels.length)];
+  const eta = Math.floor(Math.random() * (selected.etaMax - selected.etaMin + 1)) + selected.etaMin;
+
+  $('trafficBody').innerHTML = `
+    <div class="traffic-status">
+      Traffic is -
+      <b style="color:${selected.color}">${selected.level}</b>
+    </div>
+  `;
+
+  $('etaBody').innerHTML = `
+    <div class="eta-box">
+      Estimated Arrival Time:
+      <b>${eta} mins</b>
+    </div>
+  `;
+
+  let suggestion =
+    selected.level === "HIGH"
+      ? "Metro Recommended 🚇 (Heavy traffic)"
+      : "Bus / Cab Recommended 🚌🚕";
+
+  $('altBody').innerHTML = `
+    <div class="alt-box">
+      ${suggestion}<br/>
+      <small>Cab options: Ola · Uber · Rapido</small>
+    </div>
+  `;
 }
 
-// ======= BUS SEARCH LOGIC (ONLY URL FIXED) =======
-// ======= BUS SEARCH LOGIC (ONLY REQUIRED FIX) =======
+// ======= BUS SEARCH =======
 async function searchRoute(){
   const start = $('start').value.trim();
   const end = $('end').value.trim();
@@ -111,7 +139,6 @@ async function searchRoute(){
   }
 
   document.querySelector(".results-wrap").style.display = "block";
-  showLoadingSkeletons();
 
   try {
     const response = await fetch("/bus-route", {
@@ -132,21 +159,17 @@ ${data.result}
       `;
     }
 
-  } catch (err) {
-    $('busBody').innerHTML =
-      `<div class="placeholder">Backend error</div>`;
+  } catch {
+    $('busBody').innerHTML = `<div class="placeholder">Backend error</div>`;
   }
-
-  hideSkeletonsKeepPlaceholders();
 }
 
-
-// ======= METRO SEARCH LOGIC (ONLY URL FIXED) =======
-async function searchMetroRoute() {
+// ======= METRO SEARCH =======
+async function searchMetroRoute(){
   const start = $('start').value.trim();
   const end = $('end').value.trim();
 
-  if (!start || !end) {
+  if(!start || !end){
     $('metroBody').innerHTML = `<div class="placeholder">Enter start and destination</div>`;
     return;
   }
@@ -166,34 +189,23 @@ async function searchMetroRoute() {
       let html = '<pre style="white-space: pre-wrap; font-size:14px; line-height:1.6">';
       data.lines.forEach(line => html += line + '\n');
       html += '</pre>';
-
       $('metroBody').innerHTML = html;
     }
 
-  } catch (err) {
-    $('metroBody').innerHTML =
-      `<div class="placeholder">Backend error</div>`;
+  } catch {
+    $('metroBody').innerHTML = `<div class="placeholder">Backend error</div>`;
   }
 }
 
-// ======= MAIN SEARCH BUTTON =======
-async function searchAll() {
+// ======= MAIN SEARCH =======
+async function searchAll(){
   showLoadingSkeletons();
   await searchRoute();
   await searchMetroRoute();
+  generateTrafficETA(); // 👈 frontend-only magic
 }
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
-  hideSkeletonsKeepPlaceholders();
   document.querySelector(".results-wrap").style.display = "none";
-
-  const form = document.getElementById("searchForm");
-  if(form){
-    form.addEventListener("submit", function(e){
-      e.preventDefault();
-      searchAll();
-    });
-  }
 });
-

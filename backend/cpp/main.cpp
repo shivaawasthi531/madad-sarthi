@@ -23,8 +23,8 @@ struct BusInfo {
 // ---------- UTIL FUNCTIONS ----------
 
 string trim(const string &s) {
-    size_t start = s.find_first_not_of(" \t");
-    size_t end = s.find_last_not_of(" \t");
+    size_t start = s.find_first_not_of(" \t\r\n");
+    size_t end = s.find_last_not_of(" \t\r\n");
     return (start == string::npos) ? "" : s.substr(start, end - start + 1);
 }
 
@@ -33,37 +33,31 @@ string normalizeLocation(string s) {
               [](unsigned char c){ return tolower(c); });
 
     string out;
-    for (int i = 0; i < s.size(); i++) {
-        if (s[i] == ' ') {
-            if (i > 0 && s[i-1] == '-') continue;
-            if (i + 1 < s.size() && s[i+1] == '-') continue;
-        }
-        out += s[i];
+    for (char c : s) {
+        if (isalnum(c))
+            out += c;
     }
-    return trim(out);
+    return out;
 }
 
 // ---------- MAIN ----------
 
 int main(int argc, char* argv[]) {
 
-    // 🔴 INPUT FROM COMMAND LINE (REQUIRED FOR FLASK)
+    // Required for Flask
     if (argc < 3) {
         cout << "No bus found for this route!\n";
         return 0;
     }
 
-    string from = argv[1];
-    string to   = argv[2];
-
-    from = normalizeLocation(from);
-    to   = normalizeLocation(to);
+    string from = normalizeLocation(argv[1]);
+    string to   = normalizeLocation(argv[2]);
 
     map<string, vector<Stop>> bus_routes;
     map<string, BusInfo> bus_info;
 
     // ---------- READ BUS STOPS ----------
-    ifstream stops_file("./dtc_bus_stops.csv");   // ✅ FIXED PATH
+    ifstream stops_file("./dtc_bus_stops.csv");
     if (!stops_file.is_open()) {
         cout << "Error opening dtc_bus_stops.csv\n";
         return 0;
@@ -93,7 +87,7 @@ int main(int argc, char* argv[]) {
     stops_file.close();
 
     // ---------- READ BUS INFO ----------
-    ifstream bus_file("./dtc_buses.csv");   // ✅ FIXED PATH
+    ifstream bus_file("./dtc_buses.csv");
     if (!bus_file.is_open()) {
         cout << "Error opening dtc_buses.csv\n";
         return 0;
@@ -133,9 +127,13 @@ int main(int argc, char* argv[]) {
         int from_idx = -1, to_idx = -1;
 
         for (int i = 0; i < stops.size(); i++) {
-            string s = normalizeLocation(stops[i].name);
-            if (s == from) from_idx = i;
-            if (s == to)   to_idx = i;
+            string stop_norm = normalizeLocation(stops[i].name);
+
+            if (stop_norm.find(from) != string::npos && from_idx == -1)
+                from_idx = i;
+
+            if (stop_norm.find(to) != string::npos)
+                to_idx = i;
         }
 
         if (from_idx != -1 && to_idx != -1 && from_idx < to_idx) {
@@ -148,6 +146,8 @@ int main(int argc, char* argv[]) {
                      << " -> " << bus_info[bus].end << ")\n";
                 cout << "Timings: First Bus " << bus_info[bus].first_time
                      << " | Last Bus " << bus_info[bus].last_time << "\n";
+            } else {
+                cout << "\n";
             }
 
             cout << "Route:\n";
